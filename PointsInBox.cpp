@@ -33,7 +33,7 @@ public:
                     (_points + i)->y = (_points + i)->y + (_y - (_points + i)->y) * 2 + _z;
                     (_points + i)->z = _z;
                 }
-                else if ((_points + i)->y > _y && (_points + i)->y < _y + _z && (_points + i)->y == _y + _z) {
+                else if (((_points + i)->y > _y && (_points + i)->y < _y + _z) || (_points + i)->y == _y + _z) {
                     (_points + i)->z = (_y + _z) - (_points + i)->y;
                     (_points + i)->y = _y + _z;
                 }
@@ -54,6 +54,8 @@ public:
                 (_points + i)->z = (_points + i)->x - (_z + _x);
                 (_points + i)->x = _z + _y;
             }
+
+            std::cout << "x: " << (_points + i)->x << " y: " << (_points + i)->y << std::endl;
         }
     }
 
@@ -122,11 +124,11 @@ public:
 int main()
 {
     Point points[] = {
-        Point(1, 11),
-        Point(8, 10)
+        Point(3.00, 3.00),
+        Point(5.00, 5.00)
     };
 
-    Box box(6, 4, 2);
+    Box box(2, 2, 2);
     PointsWithinBoxValidator validator(box);
     if (validator.validate(points)) {
         box.put_points(points);
