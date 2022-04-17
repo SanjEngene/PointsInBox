@@ -15,45 +15,94 @@ public:
 
 class Box {
 public:
-    int x;
-    int y;
-    int z;
+    Box(int x, int y, int z) {
+        _x = x;
+        _y = y;
+        _z = z;
+    }
 
-    Box(int x, int y, int z) : x(x), y(y), z(z) { }
+    void put_points(Point* points) {
+        _points = points;
+    }
 
-    void get_together(Point* points) {
+    void get_together() {
 
         for (int i = 0; i < 2; i++) {
-            if (((points + i)->x > z && (points + i)->x < z + x) || (points + i)->x == z || (points + i)->x == z + x) {
-                if ((points + i)->y <= y) {
-                    (points + i)->y = (points + i)->y + (y - (points + i)->y) * 2 + z;
-                    (points + i)->z = z;
+            if (((_points + i)->x > _z && (_points + i)->x < _z + _x) || (_points + i)->x == _z || (_points + i)->x == _z + _x) {
+                if ((_points + i)->y <= _y) {
+                    (_points + i)->y = (_points + i)->y + (_y - (_points + i)->y) * 2 + _z;
+                    (_points + i)->z = _z;
                 }
-                else if ((points + i)->y > y && (points + i)->y < y + z && (points + i)->y == y + z) {
-                    (points + i)->z = (y + z) - (points + i)->y;
-                    (points + i)->y = y + z;
+                else if ((_points + i)->y > _y && (_points + i)->y < _y + _z && (_points + i)->y == _y + _z) {
+                    (_points + i)->z = (_y + _z) - (_points + i)->y;
+                    (_points + i)->y = _y + _z;
                 }
-                else if ((points + i)->y > y * 2 + z && (points + i)->y < y * 2 + z * 2) {
-                    (points + i)->z = (points + i)->y - (y * 2 + z);
-                    (points + i)->y = y * 2 + z;
+                else if ((_points + i)->y > _y * 2 + _z && (_points + i)->y < _y * 2 + _z * 2) {
+                    (_points + i)->z = (_points + i)->y - (_y * 2 + _z);
+                    (_points + i)->y = _y * 2 + _z;
                 }
-                else if ((points + i)->y == y * 2 + z * 2) {
-                    (points + i)->z = z;
-                    (points + i)->y = y * 2 + z;
+                else if ((_points + i)->y == _y * 2 + _z * 2) {
+                    (_points + i)->z = _z;
+                    (_points + i)->y = _y * 2 + _z;
                 }
             }
-            else if ((points + i)->x < z || (points + i)->x == 0) {
-                (points + i)->z = z - (points + i)->x;
-                (points + i)->x = z;
+            else if ((_points + i)->x < _z || (_points + i)->x == 0) {
+                (_points + i)->z = _z - (_points + i)->x;
+                (_points + i)->x = _z;
             }
-            else if (((points + i)->x > x + z && (points + i)->x < z * 2 + x) || (points + i)->x == z * 2 + y) {
-                (points + i)->z = (points + i)->x - (z + x);
-                (points + i)->x = z + y;
+            else if (((_points + i)->x > _x + _z && (_points + i)->x < _z * 2 + _x) || (_points + i)->x == _z * 2 + _y) {
+                (_points + i)->z = (_points + i)->x - (_z + _x);
+                (_points + i)->x = _z + _y;
             }
         }
     }
 
+    int get_x() {
+        return _x;
+    }
+    int get_y() {
+        return _y;
+    }
+    int get_z() {
+        return _z;
+    }
+
     ~Box() { }
+
+private:
+    int _x;
+    int _y;
+    int _z;
+    Point* _points;
+};
+
+class PointsWithinBoxValidator {
+public:
+    PointsWithinBoxValidator(Box& box) : _box(box) { }
+
+    bool validate(Point* points) {
+
+        bool within = true;
+        for (int i = 0; i < 2; i++) {
+            if ((points + i)->x < 0 || (points + i)->x > 2 * _box.get_z() + _box.get_x()) {
+                within = false;
+            }
+            else if ((points + i)->x >= 0 && (points + i)->x < _box.get_z()) {
+                if ((points + i)->y < _box.get_y() + _box.get_z() || (points + i)->y > 2 * _box.get_y() + _box.get_z())
+                    within = false;
+            }
+            else if ((points + i)->x > _box.get_z() + _box.get_x() && (points + i)->x <= 2 * _box.get_z() + _box.get_x()) {
+                if ((points + i)->y < _box.get_y() + _box.get_z() || (points + i)->y > 2 * _box.get_y() + _box.get_z())
+                    within = false;
+            }
+        }
+
+        return within;
+    }
+
+    ~PointsWithinBoxValidator() { }
+private:
+    Box _box;
 };
 
 class Solution {
@@ -73,16 +122,25 @@ public:
 int main()
 {
     Point points[] = {
-        Point(2, 4),
+        Point(1, 11),
         Point(8, 10)
     };
 
     Box box(6, 4, 2);
-    box.get_together(points);
+    PointsWithinBoxValidator validator(box);
+    if (validator.validate(points)) {
+        box.put_points(points);
+        box.get_together();
+
+        Solution solution = Solution();
+        solution.calculate(points[0], points[1]);
+        std::cout << solution.hypotenuse;
+
+        return 0;
+    }
     
-    Solution solution = Solution();
-    solution.calculate(points[0], points[1]);
-    std::cout << solution.hypotenuse;
+    std::cout << "points not in the box";
+    return 0;
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
